@@ -7,10 +7,10 @@ import ddt
 from opaque_keys.edx.keys import CourseKey
 
 from openedx.core.djangoapps.credit.api import (
-    get_credit_requirements, set_credit_requirements, _get_requirements_to_disable
+    get_credit_requirements, set_credit_requirements, _get_requirements_to_disable, is_user_eligible_for_credit
 )
 from openedx.core.djangoapps.credit.exceptions import InvalidCreditRequirements, InvalidCreditCourse
-from openedx.core.djangoapps.credit.models import CreditCourse, CreditRequirement
+from openedx.core.djangoapps.credit.models import CreditCourse, CreditRequirement, CreditEligibility
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 
 
@@ -181,6 +181,15 @@ class ApiTestCases(ModuleStoreTestCase):
         requirements_to_disabled = _get_requirements_to_disable(old_requirements, requirements)
         self.assertEqual(len(requirements_to_disabled), 0)
 
+    def test_is_user_eligible_for_credit(self):
+        credit_course = self.add_credit_course()
+        self.add_credit_eligible_course(credit_course, 'staff')
+        is_eligible = is_user_eligible_for_credit('staff', credit_course.course_key)
+        self.assertTrue(is_eligible)
+
+        is_eligible = is_user_eligible_for_credit('abc', credit_course.course_key)
+        self.assertFalse(is_eligible)
+
     def add_credit_course(self, enabled=True):
         """
         Mark the course as a credit.
@@ -188,3 +197,11 @@ class ApiTestCases(ModuleStoreTestCase):
         credit_course = CreditCourse(course_key=self.course_key, enabled=enabled)
         credit_course.save()
         return credit_course
+
+    def add_credit_eligible_course(self, credit_course, username):
+        """
+        Mark the user eligible for credit course
+        """
+        credit_eligible_course = CreditEligibility(course=credit_course, username=username)
+        credit_eligible_course.save()
+        return credit_eligible_course

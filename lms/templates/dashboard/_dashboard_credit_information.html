@@ -8,15 +8,41 @@ from course_modes.models import CourseMode
 
 <div class="message message-status is-shown">
     <p>
-        ${_("You have meet credit eligibility for {course} from following credit provider.").format(course=credit_message["course_name"])}
-        <ul>
-            % for provider in credit_message["providers"]:
-            <li>
-                ${provider["display_name"]}
-            </li>
-            % endfor
-        </ul>
-        <a class="btn" href="" target="_blank">Learn More</a>
+        % if credit_message["status"] == "requirements_meet":
+            <span>
+            % if credit_message["urgent"]:
+                ${_("{username}, your eligibility for credit expires on {expiry}. Don't miss out!").format(
+                        username=credit_message["user_full_name"],
+                        expiry=credit_message["expiry"]
+                    )
+                }
+            % else:
+                ${_("{congrats} {username}, You have meet requirements for credit.").format(
+                        congrats="<b>Congratulations</b>",
+                        username=credit_message["user_full_name"]
+                    )
+                }
+            % endif
+            </span>
+            <span style="float: right"> <a class="btn" href="" target="_blank">Purchase Credit</a> </span>
+
+        % elif credit_message["status"] == "pending":
+            ${_("Thank you, your payment is complete, your credit is processing. Please see {provider_link} for more information.").format(
+                    provider_link='<a href="#" target="_blank">{}</a>'.format(credit_message["provider"])
+                )
+            }
+        % elif credit_message["status"] == "approved":
+            ${_("Thank you, your credit is approved. Please see {provider_link} for more information.").format(
+                    provider_link='<a href="#" target="_blank">{}</a>'.format(credit_message["provider"])
+                )
+            }
+        % elif credit_message["status"] == "rejected":
+            ${_("Your credit has been denied. Please contact {provider_link} for more information.").format(
+                    provider_link='<a href="#" target="_blank">{}</a>'.format(credit_message["provider"])
+                )
+            }
+        % endif
+
     </p>
 
 

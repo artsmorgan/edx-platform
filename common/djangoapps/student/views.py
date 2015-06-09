@@ -528,7 +528,7 @@ def dashboard(request):
     for course, __ in course_enrollment_pairs:
         enrolled_courses_dict[unicode(course.id)] = course
 
-    credit_messages = _create_credit_availability_message(user.username, enrolled_courses_dict)
+    credit_messages = _create_credit_availability_message(user.username, enrolled_courses_dict, user)
 
     course_optouts = Optout.objects.filter(user=user).values_list('course_id', flat=True)
 
@@ -704,7 +704,7 @@ def _create_recent_enrollment_message(course_enrollment_pairs, course_modes):
         )
 
 
-def _create_credit_availability_message(username, enrolled_courses_dict):
+def _create_credit_availability_message(username, enrolled_courses_dict, user):
     """Builds a dict of credit availability for courses.
 
     Construct a for courses user has completed and has not purchased credit
@@ -724,17 +724,22 @@ def _create_credit_availability_message(username, enrolled_courses_dict):
     eligibility_messages = {}
     for course_id, eligibility in user_eligibitlites.iteritems():
         if course_id not in user_purchased_credit:
-            # TODO: @Will for multiple credit provider how will we pick the duration to display the message
-            # TODO: I am just getting the first provider
-            provider = eligibility["providers"][0]
-            duration = provider["eligibility_duration"]
+            duration = eligibility["seconds_good_for_display"]
             curr_time = timezone.now()
-            if curr_time < eligibility["created_at"] + timedelta(seconds=duration):
+            validity_till = eligibility["created_at"] + timedelta(seconds=duration)
+            if validity_till > curr_time:
+                diff = validity_till - curr_time
+                urgent = diff.days <= 30
                 eligibility_messages[course_id] = {
                     "course_id": course_id,
                     "course_name": enrolled_courses_dict[course_id].display_name,
                     "is_eligible": True,
-                    "providers": eligibility["providers"]
+                    "providers": eligibility["providers"],
+                    "status": eligibility["status"],
+                    "provider": eligibility.get("provider"),
+                    "urgent": urgent,
+                    "user_full_name": user.get_full_name(),
+                    "expiry": validity_till
                 }
 
     return eligibility_messages

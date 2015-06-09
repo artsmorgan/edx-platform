@@ -8,8 +8,8 @@ class Migration(SchemaMigration):
     def forwards(self):
 
         # Changing field 'SoftwareSecurePhotoVerification.window'. Setting its default value to None
-        cursor = connection.cursor()
-        cursor.execute('ALTER TABLE verify_student_softwaresecurephotoverification CHANGE `window_id` `window_id` int(11) DEFAULT NULL;')
+        if db.backend_name == 'mysql':
+            db.execute('ALTER TABLE verify_student_softwaresecurephotoverification CHANGE `window_id` `window_id` int(11) DEFAULT NULL;')
 
     def backwards(self, orm):
 

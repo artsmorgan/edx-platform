@@ -9,6 +9,8 @@ import logging
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
+from eventtracking import tracker
+
 from xmodule.modulestore.django import modulestore
 
 from certificates.models import (
@@ -259,3 +261,27 @@ def get_active_web_certificate(course, is_preview_mode=None):
         if config.get('is_active') or is_preview_mode:
             return config
     return None
+
+
+def emit_certificate_event(event_name, user, course_id, course=None, event_data=None):
+    """
+    Emits certificate event.
+    """
+    event_name = '.'.join(['edx', 'certificate', event_name])
+    if course is None:
+        course = modulestore().get_course(course_id, depth=0)
+    context = {
+        'user_id': user.id,
+        'org_id': course.org,
+        'course_id': unicode(course_id)
+    }
+    data = {
+        'user_id': user.id,
+        'course_id': unicode(course_id),
+        'certificate_url': get_certificate_url(user.id, course_id)
+    }
+    event_data = event_data or {}
+    event_data.update(data)
+
+    with tracker.get_tracker().context(event_name, context):
+        tracker.emit(event_name, event_data)

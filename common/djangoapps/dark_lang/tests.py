@@ -150,6 +150,8 @@ class DarkLangMiddlewareTests(TestCase):
             enabled=True
         ).save()
 
+        # Since we have only released "rel-ter", the requested code "rel" will
+        # fuzzy match to "rel-ter", in addition to "rel-ter" exact matching "rel-ter"
         self.assertAcceptEquals(
             'rel-ter;q=1.0, rel-ter;q=0.5',
             self.process_request(accept='rel-ter;q=1.0, rel;q=0.5')
@@ -187,13 +189,14 @@ class DarkLangMiddlewareTests(TestCase):
         )
 
     @ddt.data(
-        ('es;q=1.0, pt;q=0.5', 'es;q=1.0'),  # es should get es
-        ('es-419;q=1.0, pt;q=0.5', 'es-419;q=1.0'),  # es-419 should get es-419
-        ('es-es;q=1.0, pt;q=0.5', 'es-es;q=1.0'),  # es-es should get es-es
+        # Test condition: If I release 'es-419, es, es-es'...
+        ('es;q=1.0, pt;q=0.5', 'es;q=1.0'),          # 1. es should get es
+        ('es-419;q=1.0, pt;q=0.5', 'es-419;q=1.0'),  # 2. es-419 should get es-419
+        ('es-es;q=1.0, pt;q=0.5', 'es-es;q=1.0'),    # 3. es-es should get es-es
     )
     @ddt.unpack
     def test_exact_match_gets_priority(self, accept_header, expected):
-        # If I release 'es-419, es, es-es'
+        # Release 'es-419, es, es-es'
         DarkLangConfig(
             released_languages=('es-419, es, es-es'),
             changed_by=self.user,
@@ -204,7 +207,7 @@ class DarkLangMiddlewareTests(TestCase):
             self.process_request(accept=accept_header)
         )
 
-    @unittest.skip("This won't work until fallback is implemented for LA country codes")
+    @unittest.skip("This won't work until fallback is implemented for LA country codes. See LOC-86")
     @ddt.data(
         'es-AR',  # Argentina
         'es-PY',  # Paraguay

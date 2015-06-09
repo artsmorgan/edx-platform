@@ -85,18 +85,15 @@ class DarkLangMiddleware(object):
 
     def _fuzzy_match(self, lang_code):
         """Returns a fuzzy match for lang_code"""
-        print "_fuzzy_match: Checking if {} == any of {}".format(lang_code.lower(), self.released_langs)
         if lang_code in self.released_langs:
-            print 'Exact match; found {} in released langs'.format(lang_code)
             return lang_code
 
         lang_prefix = lang_code.split('-')[0]
         for released_lang in self.released_langs:
             released_prefix = released_lang.split('-')[0]
             if lang_prefix == released_prefix:
-                print "Fuzzy match: Asked for {}, returning {}".format(lang_code, released_lang)
                 return released_lang
-        return False
+        return None
 
     def _format_accept_value(self, lang, priority=1.0):
         """
@@ -113,8 +110,6 @@ class DarkLangMiddleware(object):
         if accept is None or accept == '*':
             return
 
-        print "Getting new acceptance headers"
-
         new_accept = []
         for lang, priority in dark_parse_accept_lang_header(accept):
             fuzzy_code = self._fuzzy_match(lang.lower())
@@ -123,7 +118,6 @@ class DarkLangMiddleware(object):
 
         new_accept = ", ".join(new_accept)
 
-        print 'setting meta accept to: "{}"'.format(new_accept), type(new_accept)
         request.META['HTTP_ACCEPT_LANGUAGE'] = new_accept
 
     def _activate_preview_language(self, request):

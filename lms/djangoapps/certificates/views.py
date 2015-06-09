@@ -17,9 +17,9 @@ from django.views.decorators.http import require_POST
 
 from capa.xqueue_interface import XQUEUE_METRIC_NAME
 from certificates.api import (
-    get_active_web_certificate, 
-    get_certificate_url, 
-    generate_user_certificates, 
+    get_active_web_certificate,
+    get_certificate_url,
+    generate_user_certificates,
     emit_certificate_event
 )
 from certificates.models import (
@@ -29,8 +29,8 @@ from certificates.models import (
     ExampleCertificate,
     CertificateHtmlViewConfiguration,
     CertificateSocialNetworks,
-    BadgeAssertion)
-from certificates.queue import XQueueCertInterface
+    BadgeAssertion
+)
 from edxmako.shortcuts import render_to_response
 from util.views import ensure_valid_course_key
 from xmodule.modulestore.django import modulestore

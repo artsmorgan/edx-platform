@@ -82,6 +82,9 @@ class CertificateStatuses(object):
 
 
 class CertificateSocialNetworks(object):
+    """
+    Enum for certificate social networks
+    """
     linkedin = 'LinkedIn'
     facebook = 'Facebook'
     twitter = 'Twitter'

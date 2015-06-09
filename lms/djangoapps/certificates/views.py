@@ -28,6 +28,7 @@ from certificates.models import (
     GeneratedCertificate,
     ExampleCertificate,
     CertificateHtmlViewConfiguration,
+    CertificateSocialNetworks,
     BadgeAssertion)
 from certificates.queue import XQueueCertInterface
 from edxmako.shortcuts import render_to_response
@@ -577,7 +578,7 @@ def render_html_view(request, user_id, course_id):
             'accessing_user_id': request.user.id,
             'certificate_id': user_certificate.verify_uuid,
             'enrollment_mode': user_certificate.mode,
-            'social_network': 'LinkedIn'
+            'social_network': CertificateSocialNetworks.linkedin
         })
 
     # Append/Override the existing view context values with any course-specific static values from Advanced Settings

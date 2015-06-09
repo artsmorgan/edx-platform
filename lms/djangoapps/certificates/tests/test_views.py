@@ -26,7 +26,8 @@ from certificates.models import (
     ExampleCertificate,
     GeneratedCertificate,
     BadgeAssertion,
-    CertificateStatuses
+    CertificateStatuses,
+    CertificateSocialNetworks,
 )
 
 from certificates.tests.factories import (
@@ -455,7 +456,7 @@ class CertificatesViewsTests(ModuleStoreTestCase, EventTrackingTestCase):
                 'certificate_url': test_url,
                 'course_id': unicode(self.course.id),
                 'user_id': self.user.id,
-                'social_network': 'LinkedIn'
+                'social_network': CertificateSocialNetworks.linkedin
             },
             actual_event['data']
         )
